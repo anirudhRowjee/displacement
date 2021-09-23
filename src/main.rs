@@ -6,12 +6,12 @@ use std::io;
 use termion::raw::IntoRawMode;
 
 use tui::{
-    Terminal,
-    layout::{Constraint,Direction,Layout,Alignment},
     backend::TermionBackend,
-    widgets::{Block,Borders,Paragraph},
+    layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::{Span, Spans}
+    text::{Span, Spans},
+    widgets::{Block, Borders, Paragraph},
+    Terminal,
 };
 
 fn main() -> Result<(), io::Error> {
@@ -23,14 +23,17 @@ fn main() -> Result<(), io::Error> {
     let text = vec![
         Spans::from(""),
         Spans::from(""), //simply to push content into bloc, very bad practice.
-        Spans::from(Span::styled("FTP using Rust" , Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)))
+        Spans::from(Span::styled(
+            "FTP using Rust",
+            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+        )),
     ];
     terminal.draw(|f| {
         // split the layout into three vertical chunks according
         // to the constraints provided
         let para = Paragraph::new(text.clone())
-        .style(Style::default().bg(Color::White))
-        .alignment(Alignment::Center);
+            .style(Style::default().bg(Color::White))
+            .alignment(Alignment::Center);
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
@@ -45,19 +48,25 @@ fn main() -> Result<(), io::Error> {
             .split(f.size());
 
         // create a basic block
-        let block = Block::default().title("Block").borders(Borders::ALL)
+        let block = Block::default()
+            .title("Block")
+            .borders(Borders::ALL)
             .style(Style::default().bg(Color::White));
 
         // render
         f.render_widget(block, chunks[0]);
 
-        let block = Block::default().title("Block 2").borders(Borders::ALL)
+        let block = Block::default()
+            .title("Block 2")
+            .borders(Borders::ALL)
             .style(Style::default().bg(Color::White));
 
         // render
         f.render_widget(block, chunks[1]);
 
-        let block = Block::default().title("Block 3").borders(Borders::ALL)
+        let block = Block::default()
+            .title("Block 3")
+            .borders(Borders::ALL)
             .style(Style::default().bg(Color::White));
 
         // render
