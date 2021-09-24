@@ -4,7 +4,7 @@ language: rust
 
 # setup clippy and rustfmt
 before_install:
-  - cargo install clippy
+  - rustup component add clippy-preview
 
 # cache packages installed to ensure redundant reinstalls don't occur
 cache: cargo
