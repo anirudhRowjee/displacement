@@ -1,9 +1,6 @@
 # this is our CI pipeline
 
 language: rust
-rust:
-  - 1.0.0
-  - 1.1.0
 
 script:
   - cargo build --verbose
