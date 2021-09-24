@@ -21,8 +21,6 @@ fn main() -> Result<(), io::Error> {
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     let text = vec![
-        Spans::from(""),
-        Spans::from(""), //simply to push content into bloc, very bad practice.
         Spans::from(Span::styled(
             "FTP using Rust",
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
@@ -32,6 +30,7 @@ fn main() -> Result<(), io::Error> {
         // split the layout into three vertical chunks according
         // to the constraints provided
         let para = Paragraph::new(text.clone())
+            .block(Block::default().title("Hello world block").borders(Borders::ALL))  
             .style(Style::default().bg(Color::White))
             .alignment(Alignment::Center);
         let chunks = Layout::default()
@@ -47,14 +46,9 @@ fn main() -> Result<(), io::Error> {
             )
             .split(f.size());
 
-        // create a basic block
-        let block = Block::default()
-            .title("Block")
-            .borders(Borders::ALL)
-            .style(Style::default().bg(Color::White));
 
         // render
-        f.render_widget(block, chunks[0]);
+        f.render_widget(para, chunks[0]);
 
         let block = Block::default()
             .title("Block 2")
@@ -71,7 +65,6 @@ fn main() -> Result<(), io::Error> {
 
         // render
         f.render_widget(block, chunks[2]);
-        f.render_widget(para, chunks[0]);
     })?;
     Ok(())
 }
