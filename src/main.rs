@@ -70,3 +70,12 @@ fn main() -> Result<(), io::Error> {
     })?;
     Ok(())
 }
+
+// our first tests!
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

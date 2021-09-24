@@ -2,6 +2,14 @@
 
 language: rust
 
+# setup clippy and rustfmt
+before_install:
+  - cargo install clippy
+
+# cache packages installed to ensure redundant reinstalls don't occur
+cache: cargo
+
 script:
   - cargo build --verbose
   - cargo test --verbose
+  - cargo clippy
