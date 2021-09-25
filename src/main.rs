@@ -46,6 +46,8 @@ fn main() -> Result<(), io::Error> {
             )
             .split(f.size());
 
+        // create a basic block
+        let block = Block::default().title("Block").borders(Borders::ALL);
 
         // render
         f.render_widget(para, chunks[0]);
@@ -67,4 +69,13 @@ fn main() -> Result<(), io::Error> {
         f.render_widget(block, chunks[2]);
     })?;
     Ok(())
+}
+
+// our first tests!
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
 }
