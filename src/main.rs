@@ -2,9 +2,14 @@
  * Displacement: A simple implementation of the FTP protocol
  */
 
+use std::process;
+use termion::input::TermRead;
+use tokio::net::TcpListener;
 use std::io;
 use termion::raw::IntoRawMode;
-
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use termion::event::Key;
+use std::io::{Write, stdout, stdin};
 use tui::{
     backend::TermionBackend,
     layout::{Alignment, Constraint, Direction, Layout},
@@ -13,6 +18,27 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Terminal,
 };
+
+/*
+ *
+ *#[tokio::main]
+ *async fn ping() -> (Result<() , Box<dyn std::error::Error>>) {
+ *    let literal = TcpListener::bind("127.0.0.1:3000")?;
+ *}
+ * Doesnt work cus asyn always returns a box type () , async is rust works more like a closure
+ */
+#[tokio::main]
+async fn ping() -> Result<() , Box<dyn std::error::Error>> {
+        let listener = TcpListener::bind("127.0.0.1:3000").await?;
+        let (mut socket , addr) = listener.accept().await?;
+        let rand : u8 = 0;
+        let mut emptbuff : Vec<u8> = vec![0;1024];
+        let res = socket.read_to_end(&mut emptbuff).await?;
+
+        println!("I've been pinged!");
+    Ok(())
+}
+
 
 fn main() -> Result<(), io::Error> {
     println!("Hello, world!");
@@ -26,6 +52,7 @@ fn main() -> Result<(), io::Error> {
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
         )),
     ];
+    loop{
     terminal.draw(|f| {
         // split the layout into three vertical chunks according
         // to the constraints provided
@@ -67,6 +94,22 @@ fn main() -> Result<(), io::Error> {
 
         // render
         f.render_widget(block, chunks[2]);
-    })?;
-    Ok(())
-}
+
+        //expecting inouts after render
+         })?;
+        let stdin = stdin();
+        for c in stdin.keys() {
+             match c.unwrap() {
+                 Key::Char('q') => {
+                     println!("reached here");
+                    process::exit(1);
+                 },
+                 Key::Char('s')=>{
+                    let res = ping();
+                    println!("{:?}",res);
+                 }
+            _ => {}
+
+    }
+        };
+}}
