@@ -2,6 +2,7 @@
  * Displacement: A simple implementation of the FTP protocol
  */
 
+/*
 use std::process;
 use termion::input::TermRead;
 use tokio::net::TcpListener;
@@ -113,3 +114,58 @@ fn main() -> Result<(), io::Error> {
     }
         };
 }}
+*/
+
+use std::thread;
+use std::time::Duration;
+// MPSC => Multi Producer Single Consumer
+use std::sync::mpsc;
+
+fn main() {
+
+    let (tx, rx) = mpsc::channel();
+
+    let tx2 = tx.clone();
+
+    let child = thread::spawn(move || {
+
+        let vals = vec![
+            String::from("Hi!"),
+            String::from("From!"),
+            String::from("The!"),
+            String::from("Thread!"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+
+    });
+
+
+    let child2 = thread::spawn(move || {
+
+        let vals = vec![
+            String::from("2: Hi!"),
+            String::from("2: From!"),
+            String::from("2: The!"),
+            String::from("2: Thread!"),
+        ];
+
+        for val in vals {
+            tx2.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+
+    });
+
+    for recieved in rx {
+        println!("Got {}", recieved);
+    }
+
+    child.join().unwrap();
+    child2.join().unwrap();
+
+}
+
