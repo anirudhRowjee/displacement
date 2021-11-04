@@ -116,56 +116,55 @@ fn main() -> Result<(), io::Error> {
 }}
 */
 
-use std::thread;
-use std::time::Duration;
-// MPSC => Multi Producer Single Consumer
-use std::sync::mpsc;
-
-fn main() {
-
-    let (tx, rx) = mpsc::channel();
-
-    let tx2 = tx.clone();
-
-    let child = thread::spawn(move || {
-
-        let vals = vec![
-            String::from("Hi!"),
-            String::from("From!"),
-            String::from("The!"),
-            String::from("Thread!"),
-        ];
-
-        for val in vals {
-            tx.send(val).unwrap();
-            thread::sleep(Duration::from_secs(1));
-        }
-
-    });
+use tokio::net::TcpListener;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 
-    let child2 = thread::spawn(move || {
+// declare the main runtime as asynchronous
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-        let vals = vec![
-            String::from("2: Hi!"),
-            String::from("2: From!"),
-            String::from("2: The!"),
-            String::from("2: Thread!"),
-        ];
+    /* 
+     * a TCPListener is like a TCP "server" - it allows us to read and write packets
+     * at this specific address, which acts as a TCP Interface. Here, we're binding this listener
+     * to port 8080.
+     */
+    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+    println!("Listening on 127.0.0.1:8080");
 
-        for val in vals {
-            tx2.send(val).unwrap();
-            thread::sleep(Duration::from_secs(1));
-        }
+    loop {
 
-    });
+        // accept our interfaces as soon as a connection takes place
+        let (mut socket, _) = listener.accept().await?;
 
-    for recieved in rx {
-        println!("Got {}", recieved);
+        /*
+         * create a "task", which is the atomic unit of execution in a Tokio Application.
+         * These tasks may run (depending on the scheduler and/or runtime) on the same, or on a
+         * different thread.
+         */
+        tokio::spawn(async move {
+
+            // state!
+            let mut databuf = [0; 1024];
+
+            loop {
+                let n = match socket.read(&mut databuf).await {
+                    // if n is zero, the socket is closed
+                    Ok(n) if n == 0 => return,
+                    Ok(n) => n,
+                    Err(e) => {
+                        eprintln!("Couldn't read! Error: {:?}", e);
+                        return;
+                    }
+                };
+
+                // since we're an echo server, we write this data back
+                if let Err(e) = socket.write_all(&databuf[0..n]).await {
+                    eprintln!("Couldn't Write! Error : {:?}", e);
+                    return;
+                }
+            }
+
+        });
     }
-
-    child.join().unwrap();
-    child2.join().unwrap();
-
 }
-
