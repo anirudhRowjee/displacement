@@ -7,7 +7,7 @@ mod ui;
 mod network;
 
 struct State {
-    username: String.
+    username: String,
     data_port: u32,
     control_port: u32,
     server_ip: String,
