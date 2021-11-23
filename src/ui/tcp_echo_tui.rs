@@ -18,7 +18,7 @@ pub fn sanitize_byte_array(bytes: [u8; 1024]) -> String {
 }
 
 pub async fn render_ui(reciever: mpsc::Receiver<[u8; 1024]>) -> Result<(), io::Error> {
-    println!("hello, world!");
+    // println!("hello, world!");
 
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
