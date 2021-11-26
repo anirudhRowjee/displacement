@@ -1,5 +1,13 @@
 # Displacement - A Simple Command-Line FTP Client in Rust
 
+```
+   ___  ___________  __   ___  ___________  ________  ________
+  / _ \/  _/ __/ _ \/ /  / _ |/ ___/ __/  |/  / __/ |/ /_  __/
+ / // // /_\ \/ ___/ /__/ __ / /__/ _// /|_/ / _//    / / /   
+/____/___/___/_/  /____/_/ |_\___/___/_/  /_/___/_/|_/ /_/    
+                                                              
+```
+
 [WIP]
 
 Displacement is a simple implementation of a command-line FTP client in Rust. At present, the functionalities supported are - 

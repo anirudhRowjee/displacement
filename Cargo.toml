@@ -10,4 +10,5 @@ tui = { version = "0.16", default-features = false, features = ['crossterm'] }
 termion = "1.5"
 crossterm = "0.5.0"
 ascii = "1.0.0"
+colored = "2.0.0"
 tokio = { version = "1.14.0", features = ["full"] }

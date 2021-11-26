@@ -1,10 +1,11 @@
 use std::net::IpAddr;
 use std::sync::mpsc;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncReadExt;
 use tokio::net::{TcpListener, TcpStream};
-// use futures::join;
+use colored::*;
 
 use std::str;
+
 
 enum FtpRes {
     Syntax(String),      // responses with X0Z
@@ -17,7 +18,7 @@ enum FtpRes {
 
 /// Function to decode a raw FTP Client response and identify it's type
 fn decode_response(reply: &Vec<u8>) -> FtpRes {
-    dbg!(reply);
+    // dbg!(reply);
     let decoded_response: String = String::from(str::from_utf8(&reply).expect("Decode Failed!"));
 
     if reply.len() != 0 {
@@ -32,6 +33,29 @@ fn decode_response(reply: &Vec<u8>) -> FtpRes {
     } else {
         return FtpRes::Error("No response from Server :(".to_string());
     }
+}
+
+/// function to dispatch the appropriate CLI response
+/// based on the response code
+fn decoded_response_demux(response: FtpRes) {
+
+    match response {
+        FtpRes::Syntax(decoded_response) => println!("SYNTAX: {}", decoded_response),
+        FtpRes::Information(decoded_response) => {
+            println!("INFORMATION: {}", decoded_response.green())
+        }
+        FtpRes::Connection(decoded_response) => {
+            println!("CONNECTION: {}", decoded_response.yellow())
+        }
+        FtpRes::Auth(decoded_response) => println!("AUTH: {:?}", decoded_response.cyan()),
+        FtpRes::Filesystem(decoded_response) => {
+            println!("FILESYSTEM: {}", decoded_response.blue())
+        }
+        FtpRes::Error(decoded_response) => {
+            println!("ERROR: {}", decoded_response.red());
+        }
+    }
+
 }
 
 // declare the main runtime as asynchronous
@@ -52,26 +76,24 @@ pub async fn run_listener(
 
     //TODO setup better error handling for the connection failure
     let mut stream = TcpStream::connect("127.0.0.1:21").await?;
-    // stream.set_read_timeout(Some(Duration::from_millis(100))).unwrap();
 
     println!("Listening to FTP Server located at 127.0.0.1:21");
 
     // spawn the data PI
 
     let client_future = tokio::spawn(async move {
-        println!("Hello, from the Client PI!");
+        // println!("Hello, from the Client PI!");
 
         // spawn the client PI
         let mut databuf = Vec::with_capacity(1024);
         let mut command_string: String = String::from("");
-        let mut io = std::io::stdin;
 
         loop {
 
             // we read from the stream here
-            println!("About to start reading");
+            // println!("About to start reading");
 
-            println!("About to start reading! Waiting for the socket");
+            // println!("About to start reading! Waiting for the socket");
 
             stream.readable().await.unwrap();
             // let bytes_read = stream.try_read(&mut databuf).unwrap();
@@ -79,43 +101,19 @@ pub async fn run_listener(
 
             // dbg!(bytes_read);
 
-            println!("In the loop!");
+            // println!("In the loop!");
 
-            println!("About to start reading to buffer! Waiting for the socket");
+            // println!("About to start reading to buffer! Waiting for the socket");
 
             // we check for errors here
             // find out what the response says, assume ASCII mode
             let decoded_response = decode_response(&databuf);
 
+            decoded_response_demux(decoded_response);
+
             // TODO setup handlers
             // TODO setup an enum response type for nothing coming back from the server
-            match decoded_response {
-                FtpRes::Syntax(decoded_response) => println!("SYNTAX: {:?}", decoded_response),
-
-                FtpRes::Information(decoded_response) => {
-                    println!("INFORMATION: {:?}", decoded_response)
-                }
-
-                FtpRes::Connection(decoded_response) => {
-                    println!("CONNECTION: {:?}", decoded_response)
-                }
-
-                FtpRes::Auth(decoded_response) => println!("AUTH: {:?}", decoded_response),
-
-                FtpRes::Filesystem(decoded_response) => {
-                    println!("FILESYSTEM: {:?}", decoded_response)
-                }
-
-                FtpRes::Error(decoded_response) => {
-                    println!("ERROR: {:?}", decoded_response);
-                }
-            }
-
-
-            // send this
-
-            // send a command?
-            println!("Enter Command >> ");
+            println!("D >> ");
 
             std::io::stdin().read_line(&mut command_string).unwrap();
             println!("Executing >> {:?}", command_string);
@@ -130,53 +128,29 @@ pub async fn run_listener(
 
     // spawn the data PI
     let server_future = tokio::spawn(async move {
-        println!("Hello, from the data transfer protocol");
 
+        // println!("Hello, from the data transfer protocol");
         let mut databuf: Vec<u8> = Vec::with_capacity(4096);
 
         // why 2561? It's easy to set it up using the PORT Command
         // making us use PORT 127,0,0,1,10,1 to tell the FTP server to connect to our PI
-        let mut datastream = TcpListener::bind("127.0.0.1:2561").await.unwrap();
+        let datastream = TcpListener::bind("127.0.0.1:2561").await.unwrap();
 
-        let mut datastring = String::from("");
-
-        println!("Data Listening on 127.0.0.1:1027");
+        // println!("Data Listening on 127.0.0.1:1027");
 
         loop {
             match datastream.accept().await {
                 Ok((mut datasocket, addr)) => {
-                    println!("New Client! {:?}", addr);
+                    // println!("New Client! {:?}", addr);
                     datasocket.readable().await.unwrap();
                     datasocket.read_to_end(&mut databuf).await.unwrap();
-                    println!("Server Says >> {:?}", databuf);
+                    // println!("Server Says >> {:?}", databuf);
 
                     let decoded_response = decode_response(&databuf);
 
                     // TODO setup handlers
                     // TODO setup an enum response type for nothing coming back from the server
-                    match decoded_response {
-                        FtpRes::Syntax(decoded_response) => {
-                            println!("SYNTAX: {:?}", decoded_response)
-                        }
-
-                        FtpRes::Information(decoded_response) => {
-                            println!("INFORMATION: {:?}", decoded_response)
-                        }
-
-                        FtpRes::Connection(decoded_response) => {
-                            println!("CONNECTION: {:?}", decoded_response)
-                        }
-
-                        FtpRes::Auth(decoded_response) => println!("AUTH: {:?}", decoded_response),
-
-                        FtpRes::Filesystem(decoded_response) => {
-                            println!("FILESYSTEM: {:?}", decoded_response)
-                        }
-
-                        FtpRes::Error(decoded_response) => {
-                            println!("ERROR: {:?}", decoded_response);
-                        }
-                    }
+                    decoded_response_demux(decoded_response);
 
                     databuf.clear();
                 }
