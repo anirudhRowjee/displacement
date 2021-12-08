@@ -1,7 +1,10 @@
 /*
  * Displacement: A simple implementation of the FTP protocol
  */
+
+//TODO use this for the command line parsing
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
 use std::sync::mpsc;
 use std::thread;
 use colored::*;

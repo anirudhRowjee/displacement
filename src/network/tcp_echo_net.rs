@@ -23,11 +23,11 @@ fn decode_response(reply: &Vec<u8>) -> FtpRes {
 
     if reply.len() != 0 {
         match reply[1] {
-            50 => FtpRes::Syntax(decoded_response),
-            51 | 49 => FtpRes::Information(decoded_response),
-            52 => FtpRes::Connection(decoded_response),
-            53 => FtpRes::Auth(decoded_response),
-            55 => FtpRes::Filesystem(decoded_response),
+            48 => FtpRes::Syntax(decoded_response),
+            49 => FtpRes::Information(decoded_response),
+            50 => FtpRes::Connection(decoded_response),
+            51 => FtpRes::Auth(decoded_response),
+            53 => FtpRes::Filesystem(decoded_response),
             _ => FtpRes::Error(decoded_response),
         }
     } else {
@@ -47,12 +47,13 @@ fn decoded_response_demux(response: FtpRes) {
         FtpRes::Connection(decoded_response) => {
             println!("CONNECTION: {}", decoded_response.yellow())
         }
-        FtpRes::Auth(decoded_response) => println!("AUTH: {:?}", decoded_response.cyan()),
+        FtpRes::Auth(decoded_response) => println!("AUTH: {}", decoded_response.cyan()),
         FtpRes::Filesystem(decoded_response) => {
             println!("FILESYSTEM: {}", decoded_response.blue())
         }
         FtpRes::Error(decoded_response) => {
-            println!("ERROR: {}", decoded_response.red());
+            //TODO add a conditional to print to a file
+            println!("ERROR: {}", decoded_response.red())
         }
     }
 
@@ -107,6 +108,7 @@ pub async fn run_listener(
 
             // we check for errors here
             // find out what the response says, assume ASCII mode
+
             let decoded_response = decode_response(&databuf);
 
             decoded_response_demux(decoded_response);
@@ -140,7 +142,7 @@ pub async fn run_listener(
 
         loop {
             match datastream.accept().await {
-                Ok((mut datasocket, addr)) => {
+                Ok((mut datasocket, _addr)) => {
                     // println!("New Client! {:?}", addr);
                     datasocket.readable().await.unwrap();
                     datasocket.read_to_end(&mut databuf).await.unwrap();
